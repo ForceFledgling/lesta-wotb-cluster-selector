@@ -86,3 +86,6 @@ jobs:
           asset_path: dist/Lesta_Cluster_Selector
           asset_name: Lesta_Cluster_Selector
           asset_content_type: application/octet-stream
+
+      - name: Make file executable
+        run: chmod +x dist/Lesta_Cluster_Selector
