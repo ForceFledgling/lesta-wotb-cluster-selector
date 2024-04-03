@@ -44,7 +44,7 @@ jobs:
             const uploadUrl = releaseResponse.data.upload_url;
             console.log(`Upload URL: ${uploadUrl}`);
             // Сохраняем значение в файле среды
-            process.env.upload_url = uploadUrl;
+            echo "upload_url=${uploadUrl}" >> $GITHUB_ENV
 
   build-macos:
     runs-on: macos-latest
@@ -80,15 +80,12 @@ jobs:
       - name: Create zip archive
         run: zip -j Lesta_Cluster_Selector_MacOS.zip dist/Lesta_Cluster_Selector
 
-      - name: Log UPLOAD_URL value
-        run: echo "UPLOAD_URL=${{ env.UPLOAD_URL }}" >> $GITHUB_ENV
-
       - name: Upload MacOS Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
           asset_path: Lesta_Cluster_Selector_MacOS.zip
           asset_name: Lesta_Cluster_Selector_MacOS.zip
           asset_content_type: application/zip
