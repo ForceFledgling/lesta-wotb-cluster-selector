@@ -43,7 +43,8 @@ jobs:
 
             const uploadUrl = releaseResponse.data.upload_url;
             console.log(`Upload URL: ${uploadUrl}`);
-            core.setOutput("upload_url", uploadUrl)
+            // Сохраняем значение в файле среды
+            process.env.UPLOAD_URL = uploadUrl;
 
   build-macos:
     runs-on: macos-latest
