@@ -30,8 +30,8 @@ jobs:
       - name: Build executable
         run: |
           pyinstaller --onefile main.py
-          mv dist/main dist/Lesta\ Cluster\ Selector
-          chmod +x dist/Lesta\ Cluster\ Selector
+          mv dist/main dist/Lesta Cluster Selector
+          chmod +x dist/Lesta Cluster Selector
 
       - name: Get latest commit message
         id: commit_message
