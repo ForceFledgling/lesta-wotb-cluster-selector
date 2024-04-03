@@ -28,7 +28,10 @@ jobs:
           pip install pyinstaller
 
       - name: Build executable
-        run: pyinstaller --onefile main.py
+        run: |
+          pyinstaller --onefile main.py
+          mv dist/main dist/Lesta\ Cluster\ Selector
+          chmod +x dist/Lesta\ Cluster\ Selector
 
       - name: Get latest commit message
         id: commit_message
@@ -80,6 +83,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/main
-          asset_name: main.exe
+          asset_path: dist/Lesta\ Cluster\ Selector
+          asset_name: Lesta\ Cluster\ Selector
           asset_content_type: application/octet-stream
