@@ -6,12 +6,55 @@ on:
       - main
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.TOKEN_FOR_PUBLIC }}
+          script: |
+            const { data: latestRelease } = await github.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            
+            let currentVersion = latestRelease ? latestRelease.tag_name : "v0.0.0";
+            let versionComponents = currentVersion.replace('v', '').split('.').map(Number);
+            versionComponents[2]++;
+            const nextVersion = `v${versionComponents.join('.')}`;
+
+            const releaseResponse = await github.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: nextVersion,
+              name: nextVersion,
+              body: "Тело вашего релиза",
+              draft: false,
+              prerelease: false
+            });
+
+            console.log(`Created release ${nextVersion}`);
+            console.log(releaseResponse.data);
+
+            const uploadUrl = releaseResponse.data.upload_url;
+            console.log(`Upload URL: ${uploadUrl}`);
+            core.setOutput("upload_url", uploadUrl)
+
   build-macos:
     runs-on: macos-latest
+    needs: create-release
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Get upload URL from create-release
+        run: echo "::set-env name=UPLOAD_URL::${{ needs.create-release.outputs.upload_url }}"
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -44,16 +87,14 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
-    needs: build-macos
+    needs: create-release
 
     steps:
-      - name: Download macos-executable artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: macos-executable
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - name: Unzip macos-executable
-        run: Expand-Archive -Path macos-executable.zip -DestinationPath macos-executable
+      - name: Get upload URL from create-release
+        run: echo "::set-env name=UPLOAD_URL::${{ needs.create-release.outputs.upload_url }}"
 
       - name: Install dependencies
         run: |
