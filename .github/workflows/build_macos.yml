@@ -33,6 +33,9 @@ jobs:
           mv dist/main dist/Lesta_Cluster_Selector
           chmod +x dist/Lesta_Cluster_Selector
 
+      - name: Create zip archive
+        run: zip -r Lesta_Cluster_Selector.zip dist/Lesta_Cluster_Selector
+
       - name: Get latest commit message
         id: commit_message
         run: echo "::set-output name=message::$(git log --format=%B -n 1 ${{ github.sha }})"
@@ -43,38 +46,32 @@ jobs:
         with:
           github-token: ${{ secrets.TOKEN_FOR_PUBLIC }}
           script: |
-            // Получаем последний релиз
             const { data: latestRelease } = await github.repos.getLatestRelease({
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-
-            // Получаем номер текущего релиза
+            
             let currentVersion = latestRelease ? latestRelease.tag_name : "v0.0.0";
             let versionComponents = currentVersion.replace('v', '').split('.').map(Number);
-
-            // Увеличиваем номер версии на 1
             versionComponents[2]++;
             const nextVersion = `v${versionComponents.join('.')}`;
 
-            // Создаем новый релиз
             const releaseResponse = await github.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag_name: nextVersion,
               name: nextVersion,
-              body: "Тело вашего релиза", // Замените на ваше тело релиза
+              body: "Тело вашего релиза",
               draft: false,
               prerelease: false
             });
 
             console.log(`Created release ${nextVersion}`);
-            console.log(releaseResponse.data); // Выводим информацию о релизе
+            console.log(releaseResponse.data);
 
-            // Сохраняем URL загрузки релиза
             const uploadUrl = releaseResponse.data.upload_url;
             console.log(`Upload URL: ${uploadUrl}`);
-            core.setOutput("upload_url", uploadUrl); // Сохраняем URL загрузки как выходную переменную
+            core.setOutput("upload_url", uploadUrl);
 
       - name: Upload Release Asset
         id: upload-release-asset
@@ -83,9 +80,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/Lesta_Cluster_Selector
-          asset_name: Lesta_Cluster_Selector
-          asset_content_type: application/octet-stream
-
-      - name: Make file executable
-        run: chmod +x dist/Lesta_Cluster_Selector
+          asset_path: Lesta_Cluster_Selector.zip
+          asset_name: Lesta_Cluster_Selector.zip
+          asset_content_type: application/zip
