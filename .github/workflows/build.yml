@@ -77,13 +77,18 @@ jobs:
           chmod +x dist/Lesta_Cluster_Selector
 
       - name: Create zip archive
-        run: zip -j Lesta_Cluster_Selector.zip dist/Lesta_Cluster_Selector
+        run: zip -j Lesta_Cluster_Selector_MacOS.zip dist/Lesta_Cluster_Selector
 
-      - name: Upload zip archive as artifact
-        uses: actions/upload-artifact@v2
+      - name: Upload MacOS Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
+          UPLOAD_URL: ${{ env.UPLOAD_URL }}
         with:
-          name: macos-executable
-          path: Lesta_Cluster_Selector.zip
+          upload_url: ${{ env.UPLOAD_URL }}
+          asset_path: Lesta_Cluster_Selector_MacOS.zip
+          asset_name: Lesta_Cluster_Selector_MacOS.zip
+          asset_content_type: application/zip
 
   build-windows:
     runs-on: windows-latest
@@ -117,6 +122,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
+          UPLOAD_URL: ${{ env.UPLOAD_URL }}
         with:
           upload_url: ${{ env.UPLOAD_URL }}
           asset_path: Lesta_Cluster_Selector_Windows.zip
