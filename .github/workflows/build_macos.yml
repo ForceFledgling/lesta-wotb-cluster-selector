@@ -34,7 +34,7 @@ jobs:
           chmod +x dist/Lesta_Cluster_Selector
 
       - name: Create zip archive
-        run: zip -r Lesta_Cluster_Selector.zip dist/Lesta_Cluster_Selector
+        run: zip -j Lesta_Cluster_Selector.zip dist/Lesta_Cluster_Selector/*
 
       - name: Get latest commit message
         id: commit_message
