@@ -119,7 +119,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
         with:
-          upload_url: ${{ needs.build.outputs.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.build.outputs.build-windows.outputs.create_release.outputs.upload_url }}
           asset_path: Lesta_Cluster_Selector_Windows.zip
           asset_name: Lesta_Cluster_Selector_Windows.zip
           asset_content_type: application/zip
