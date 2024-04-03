@@ -85,7 +85,7 @@ jobs:
           asset_content_type: application/zip
 
   build-windows:
-    needs: build-macos
+    needs: build-macos.outputs.create_release
     runs-on: windows-latest
 
     steps:
