@@ -38,7 +38,7 @@ jobs:
       id: create_release
       uses: actions/github-script@v4
       with:
-        github-token: ***
+        github-token: ${{ secrets.TOKEN_FOR_PUBLIC }} # Использование секрета в качестве токена
         script: |
           const startingVersion = "v0.0.1";
           
