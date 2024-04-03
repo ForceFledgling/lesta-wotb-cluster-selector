@@ -1,4 +1,4 @@
-name: Build Executables and Publish Release
+name: Build MacOS Executable and Publish Release
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-macos:
+    runs-on: macos-latest
 
     steps:
       - name: Checkout repository
@@ -27,22 +27,14 @@ jobs:
         run: |
           pip install pyinstaller
 
-      - name: Build macOS executable
+      - name: Build executable
         run: |
           pyinstaller --onefile main.py
           mv dist/main dist/Lesta_Cluster_Selector
           chmod +x dist/Lesta_Cluster_Selector
 
-      - name: Build Windows executable
-        run: |
-          pyinstaller --onefile main.py
-          mv dist/main.exe dist/Lesta_Cluster_Selector.exe
-
-      - name: Create macOS zip archive
-        run: zip -j Lesta_Cluster_Selector_macOS.zip dist/Lesta_Cluster_Selector
-
-      - name: Create Windows zip archive
-        run: zip -j Lesta_Cluster_Selector_Windows.zip dist/Lesta_Cluster_Selector.exe
+      - name: Create zip archive
+        run: zip -j Lesta_Cluster_Selector.zip dist/Lesta_Cluster_Selector
 
       - name: Get latest commit message
         id: commit_message
@@ -81,16 +73,46 @@ jobs:
             console.log(`Upload URL: ${uploadUrl}`);
             core.setOutput("upload_url", uploadUrl);
 
-      - name: Upload macOS Release Asset
-        id: upload-macos-release-asset
+      - name: Upload Release Asset
+        id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: Lesta_Cluster_Selector_macOS.zip
-          asset_name: Lesta_Cluster_Selector_macOS.zip
+          asset_path: Lesta_Cluster_Selector.zip
+          asset_name: Lesta_Cluster_Selector.zip
           asset_content_type: application/zip
+
+  build-windows:
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install pyinstaller
+        run: |
+          pip install pyinstaller
+
+      - name: Build Windows executable
+        run: |
+          pyinstaller --onefile main.py
+          mv dist/main.exe dist/Lesta_Cluster_Selector.exe
+
+      - name: Create Windows zip archive
+        run: zip -j Lesta_Cluster_Selector_Windows.zip dist/Lesta_Cluster_Selector.exe
 
       - name: Upload Windows Release Asset
         id: upload-windows-release-asset
@@ -98,7 +120,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.build.outputs.create_release.outputs.upload_url }}
           asset_path: Lesta_Cluster_Selector_Windows.zip
           asset_name: Lesta_Cluster_Selector_Windows.zip
           asset_content_type: application/zip
