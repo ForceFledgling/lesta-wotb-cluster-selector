@@ -81,7 +81,7 @@ jobs:
         run: zip -j Lesta_Cluster_Selector_MacOS.zip dist/Lesta_Cluster_Selector
 
       - name: Log UPLOAD_URL value
-        run: echo "UPLOAD_URL: ${{ env.UPLOAD_URL }}"
+        run: echo "UPLOAD_URL=${{ env.UPLOAD_URL }}" >> $GITHUB_ENV
 
       - name: Upload MacOS Release Asset
         uses: actions/upload-release-asset@v1
