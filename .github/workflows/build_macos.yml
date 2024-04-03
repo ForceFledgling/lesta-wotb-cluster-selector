@@ -1,4 +1,4 @@
-name: Build MacOS Executable and Publish Release
+name: Build Executables and Publish Release
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -27,14 +27,22 @@ jobs:
         run: |
           pip install pyinstaller
 
-      - name: Build executable
+      - name: Build macOS executable
         run: |
           pyinstaller --onefile main.py
           mv dist/main dist/Lesta_Cluster_Selector
           chmod +x dist/Lesta_Cluster_Selector
 
-      - name: Create zip archive
-        run: zip -j Lesta_Cluster_Selector.zip dist/Lesta_Cluster_Selector
+      - name: Build Windows executable
+        run: |
+          pyinstaller --onefile main.py
+          mv dist/main.exe dist/Lesta_Cluster_Selector.exe
+
+      - name: Create macOS zip archive
+        run: zip -j Lesta_Cluster_Selector_macOS.zip dist/Lesta_Cluster_Selector
+
+      - name: Create Windows zip archive
+        run: zip -j Lesta_Cluster_Selector_Windows.zip dist/Lesta_Cluster_Selector.exe
 
       - name: Get latest commit message
         id: commit_message
@@ -73,13 +81,24 @@ jobs:
             console.log(`Upload URL: ${uploadUrl}`);
             core.setOutput("upload_url", uploadUrl);
 
-      - name: Upload Release Asset
-        id: upload-release-asset
+      - name: Upload macOS Release Asset
+        id: upload-macos-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: Lesta_Cluster_Selector.zip
-          asset_name: Lesta_Cluster_Selector.zip
+          asset_path: Lesta_Cluster_Selector_macOS.zip
+          asset_name: Lesta_Cluster_Selector_macOS.zip
+          asset_content_type: application/zip
+
+      - name: Upload Windows Release Asset
+        id: upload-windows-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Lesta_Cluster_Selector_Windows.zip
+          asset_name: Lesta_Cluster_Selector_Windows.zip
           asset_content_type: application/zip
