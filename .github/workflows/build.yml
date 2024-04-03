@@ -54,7 +54,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Get upload URL from create-release
-        run: echo "::set-env name=UPLOAD_URL::${{ needs.create-release.outputs.upload_url }}"
+        run: echo "UPLOAD_URL=${{ needs.create-release.outputs.upload_url }}" >> $GITHUB_ENV
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -94,7 +94,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Get upload URL from create-release
-        run: echo "::set-env name=UPLOAD_URL::${{ needs.create-release.outputs.upload_url }}"
+        run: echo "UPLOAD_URL=${{ needs.create-release.outputs.upload_url }}" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
@@ -118,7 +118,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
         with:
-          upload_url: ${{ github.event.inputs.upload_url }}
+          upload_url: ${{ env.UPLOAD_URL }}
           asset_path: Lesta_Cluster_Selector_Windows.zip
           asset_name: Lesta_Cluster_Selector_Windows.zip
           asset_content_type: application/zip
