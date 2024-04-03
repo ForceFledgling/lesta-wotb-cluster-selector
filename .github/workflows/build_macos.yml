@@ -111,7 +111,7 @@ jobs:
           mv dist/main.exe dist/Lesta_Cluster_Selector.exe
 
       - name: Create Windows zip archive
-        run: zip -j Lesta_Cluster_Selector_Windows.zip dist/Lesta_Cluster_Selector.exe
+        run: Compress-Archive -Path dist/Lesta_Cluster_Selector.exe -DestinationPath Lesta_Cluster_Selector_Windows.zip
 
       - name: Upload Windows Release Asset
         id: upload-windows-release-asset
