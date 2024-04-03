@@ -44,7 +44,7 @@ jobs:
             const uploadUrl = releaseResponse.data.upload_url;
             console.log(`Upload URL: ${uploadUrl}`);
             // Сохраняем значение в файле среды
-            echo "upload_url=${uploadUrl}" >> $GITHUB_ENV
+            core.setOutput('upload_url', uploadUrl);
 
   build-macos:
     runs-on: macos-latest
