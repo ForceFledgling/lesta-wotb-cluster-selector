@@ -83,6 +83,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/Lesta\ Cluster\ Selector
-          asset_name: Lesta\ Cluster\ Selector
+          asset_path: dist/Lesta Cluster Selector
+          asset_name: Lesta Cluster Selector
           asset_content_type: application/octet-stream
