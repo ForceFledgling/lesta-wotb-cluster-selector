@@ -38,36 +38,44 @@ jobs:
       id: create_release
       uses: actions/github-script@v4
       with:
-        github-token: ${{ secrets.TOKEN_FOR_PUBLIC }}
+        github-token: ***
         script: |
           const startingVersion = "v0.0.1";
-
+          
           // Получаем последний релиз
           const { data: latestRelease } = await github.repos.getLatestRelease({
             owner: context.repo.owner,
             repo: context.repo.repo
           });
-
+          
           // Получаем номер текущего релиза
           let currentVersion = latestRelease ? latestRelease.tag_name : startingVersion;
           let versionComponents = currentVersion.replace('v', '').split('.').map(Number);
-
+          
           // Увеличиваем номер версии на 1
           versionComponents[2]++;
           const nextVersion = `v${versionComponents.join('.')}`;
-
+          
+          // Получаем последний коммит
+          const latestCommitMessage = await github.git.getCommit({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: context.sha
+          });
+          
           // Создаем новый релиз
           await github.repos.createRelease({
             owner: context.repo.owner,
             repo: context.repo.repo,
             tag_name: nextVersion,
             name: nextVersion,
-            body: ${{ steps.commit_message.outputs.message }},
+            body: latestCommitMessage.data.message, // Используем сообщение последнего коммита как тело релиза
             draft: false,
             prerelease: false
           });
-
+          
           console.log(`Created release ${nextVersion}`);
+
 
     
     - name: Upload Release Asset
