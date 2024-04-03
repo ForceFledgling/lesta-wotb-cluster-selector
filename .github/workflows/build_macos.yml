@@ -40,24 +40,35 @@ jobs:
       with:
         github-token: ${{ secrets.TOKEN_FOR_PUBLIC }}
         script: |
+          const startingVersion = "v0.0.1";
+
+          // Получаем последний релиз
           const { data: latestRelease } = await github.repos.getLatestRelease({
             owner: context.repo.owner,
             repo: context.repo.repo
           });
-          const newVersion = (latestRelease ? latestRelease.tag_name : 'v0.0.0').replace('v', '').split('.').map(Number);
-          newVersion[2]++;
-          const tagName = `v${newVersion.join('.')}`;
-          const releaseName = tagName;
+
+          // Получаем номер текущего релиза
+          let currentVersion = latestRelease ? latestRelease.tag_name : startingVersion;
+          let versionComponents = currentVersion.replace('v', '').split('.').map(Number);
+
+          // Увеличиваем номер версии на 1
+          versionComponents[2]++;
+          const nextVersion = `v${versionComponents.join('.')}`;
+
+          // Создаем новый релиз
           await github.repos.createRelease({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            tag_name: tagName,
-            name: releaseName,
-            body: ${{ steps.commit_message.outputs.message }},
+            tag_name: nextVersion,
+            name: nextVersion,
+            body: "Тело вашего релиза", // Замените на ваше тело релиза
             draft: false,
             prerelease: false
           });
-          console.log(`Created release ${tagName}`);
+
+          console.log(`Created release ${nextVersion}`);
+
     
     - name: Upload Release Asset
       id: upload-release-asset
