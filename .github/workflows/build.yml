@@ -1,4 +1,4 @@
-name: Build MacOS Executable and Publish Release
+name: Build Executable and Publish Release
 
 on:
   push:
@@ -36,66 +36,24 @@ jobs:
       - name: Create zip archive
         run: zip -j Lesta_Cluster_Selector.zip dist/Lesta_Cluster_Selector
 
-      - name: Get latest commit message
-        id: commit_message
-        run: echo "::set-output name=message::$(git log --format=%B -n 1 ${{ github.sha }})"
-
-      - name: Create Release
-        id: create_release
-        uses: actions/github-script@v4
+      - name: Upload zip archive as artifact
+        uses: actions/upload-artifact@v2
         with:
-          github-token: ${{ secrets.TOKEN_FOR_PUBLIC }}
-          script: |
-            const { data: latestRelease } = await github.repos.getLatestRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-            
-            let currentVersion = latestRelease ? latestRelease.tag_name : "v0.0.0";
-            let versionComponents = currentVersion.replace('v', '').split('.').map(Number);
-            versionComponents[2]++;
-            const nextVersion = `v${versionComponents.join('.')}`;
-
-            const releaseResponse = await github.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: nextVersion,
-              name: nextVersion,
-              body: "Тело вашего релиза",
-              draft: false,
-              prerelease: false
-            });
-
-            console.log(`Created release ${nextVersion}`);
-            console.log(releaseResponse.data);
-
-            const uploadUrl = releaseResponse.data.upload_url;
-            console.log(`Upload URL: ${uploadUrl}`);
-            core.setOutput("upload_url", uploadUrl);
-
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: Lesta_Cluster_Selector.zip
-          asset_name: Lesta_Cluster_Selector.zip
-          asset_content_type: application/zip
+          name: macos-executable
+          path: Lesta_Cluster_Selector.zip
 
   build-windows:
-    needs: build-macos.outputs.create_release
     runs-on: windows-latest
+    needs: build-macos
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Download macos-executable artifact
+        uses: actions/download-artifact@v2
         with:
-          python-version: '3.11'
+          name: macos-executable
+
+      - name: Unzip macos-executable
+        run: Expand-Archive -Path macos-executable.zip -DestinationPath macos-executable
 
       - name: Install dependencies
         run: |
@@ -115,12 +73,11 @@ jobs:
         run: Compress-Archive -Path dist/Lesta_Cluster_Selector.exe -DestinationPath Lesta_Cluster_Selector_Windows.zip
 
       - name: Upload Windows Release Asset
-        id: upload-windows-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
         with:
-          upload_url: ${{ needs.build-macos.outputs.create_release.outputs.upload_url }}
+          upload_url: ${{ github.event.inputs.upload_url }}
           asset_path: Lesta_Cluster_Selector_Windows.zip
           asset_name: Lesta_Cluster_Selector_Windows.zip
           asset_content_type: application/zip
