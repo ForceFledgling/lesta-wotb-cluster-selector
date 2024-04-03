@@ -87,9 +87,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_FOR_PUBLIC }}
-          upload_url: ${{ env.UPLOAD_URL }}
         with:
-          upload_url: ${{ env.UPLOAD_URL }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: Lesta_Cluster_Selector_MacOS.zip
           asset_name: Lesta_Cluster_Selector_MacOS.zip
           asset_content_type: application/zip
