@@ -4,6 +4,7 @@ import re
 import subprocess
 from pythonping import ping
 from tabulate import tabulate
+from PyInquirer import prompt
 
 class LestaClusterSelector:
     def __init__(self):
@@ -53,37 +54,80 @@ class LestaClusterSelector:
             for server in unselected_servers:
                 file.write(f"{self.replacement_ip} {self.servers[server]}\n")
 
+    # def show_menu(self):
+    #     print()
+    #     print("Выберите серверы для разблокировки:")
+    #     choices = [{
+    #         'name': f"{server} - {url}",
+    #         'value': server
+    #     } for server, url in self.servers.items()]
+
+    #     choices.append({'name': 'Разблокировать все сервера', 'value': 'all'})
+    #     choices.append({'name': 'Тестировать серверы по задержке', 'value': 'ping'})
+
+    #     questions = [
+    #         {
+    #             'type': 'checkbox',
+    #             'message': 'Выберите действие:',
+    #             'name': 'action',
+    #             'choices': choices,
+    #         }
+    #     ]
+    #     answers = prompt(questions)
+
+    #     selected_servers = answers['action']
+    #     if 'all' in selected_servers:
+    #         selected_servers = list(self.servers.keys())
+    #         self.update_hosts_file(selected_servers)
+    #     elif 'ping' in selected_servers:
+    #         results = self.ping_all_servers()
+    #         print(tabulate(results, headers=["Сервер", "Статус"]))
+    #         selected_servers.extend(server for server, status in results if status == "Недоступен")
+    #     else:
+    #         self.update_hosts_file(selected_servers)
+
     def show_menu(self):
         print()
         print("Выберите серверы для разблокировки:")
-        for i, server in enumerate(self.servers.keys()):
-            print(f"{i}. {server}")
-        print("8. Разблокировать все сервера")
-        print("9. Тестировать серверы по задержке")
-        print()
-        print("* - Введите номера серверов (через пробел), которые вы хотите разблокировать (1 2 3 4 5).")
-        print("* - Или выберите действие, которые вы хотите выполнить (7/8/9).")
-        print()
-        
-        choices = input("Выберите действие: ")
-        print()
-        selected_servers = self.get_selected_servers(choices)
-        return selected_servers
+        choices = [{
+            'name': f"{server} - {url}",
+            'value': server
+        } for server, url in self.servers.items()]
 
-    def get_selected_servers(self, choices):
-        selected_servers = []
-        for choice in choices.split():
-            if choice.isdigit() and 0 <= int(choice) <= len(self.servers)-1:
-                selected_servers.append(list(self.servers.keys())[int(choice)])
-                self.update_hosts_file(selected_servers)
-            elif choice == '8':
-                selected_servers = list(self.servers.keys())
-                self.update_hosts_file(selected_servers)
-            elif choice == '9':
-                results = self.ping_all_servers()
-                print(tabulate(results, headers=["Сервер", "Статус"]))
-                selected_servers.extend(server for server, status in results if status == "Недоступен")
-        return selected_servers
+        choices.append({'name': 'Разблокировать все сервера', 'value': 'all'})
+        choices.append({'name': 'Тестировать серверы по задержке', 'value': 'ping'})
+
+        questions = [
+            {
+                'type': 'checkbox',
+                'message': 'Выберите действие:',
+                'name': 'action',
+                'choices': choices,
+            }
+        ]
+        answers = prompt(questions)
+
+        selected_servers = answers['action']
+
+        if 'ping' in selected_servers and len(selected_servers) > 1:
+            print("Предупреждение: Выбор 'Тестировать серверы по задержке' несовместим с другими выборами.")
+            return
+        elif 'all' in selected_servers and len(selected_servers) > 1:
+            print("Предупреждение: Выбор 'Разблокировать все сервера' несовместим с другими выборами.")
+            return
+
+        if 'all' in selected_servers:
+            selected_servers = list(self.servers.keys())
+            self.update_hosts_file(selected_servers)
+        elif 'ping' in selected_servers:
+            results = self.ping_all_servers()
+            print(tabulate(results, headers=["Сервер", "Статус"]))
+            selected_servers.extend(server for server, status in results if status == "Недоступен")
+        else:
+            self.update_hosts_file(selected_servers)
+
+        if not selected_servers:
+            return
 
     def ping_server(self, server_url):
         try:
@@ -114,7 +158,7 @@ class LestaClusterSelector:
 def main():
     manager = LestaClusterSelector()
     while True:
-        selected_servers = manager.show_menu()
+        manager.show_menu()
 
 
 def run_as_admin():
