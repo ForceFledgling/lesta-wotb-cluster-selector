@@ -33,7 +33,7 @@ jobs:
               repo: context.repo.repo,
               tag_name: nextVersion,
               name: nextVersion,
-              body: "Тело вашего релиза",
+              body: "",
               draft: false,
               prerelease: false
             });
